@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: etl-pipeline
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: etl
+  template:
+    metadata:
+      labels:
+        app: etl
+    spec:
+      containers:
+      - name: etl-task
+        image: etl-pipeline-image:latest
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+        env:
+        - name: DB_HOST
+          value: "your-db-host"
+        - name: DB_USER
+          value: "your-db-user"
+        - name: DB_PASSWORD
+          value: "your-db-password"
+        - name: DB_NAME
+          value: "your-db-name"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      restartPolicy: Always
